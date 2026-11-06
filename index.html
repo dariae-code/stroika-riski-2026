@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Стройка под давлением — риски строительного рынка России 2026</title>
+<meta name="description" content="Интерактивный дашборд: банкротства, ликвидации и судебные иски в строительной отрасли России в 2026 году">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<script src="map-data.js"></script>
+<style>
+  :root {
+    --bg: #0e1217;
+    --surface: #151a21;
+    --surface-2: #1a202a;
+    --surface-3: #202834;
+    --border: #2a3341;
+    --divider: #232b37;
+    --text: #e9edf3;
+    --muted: #98a3b3;
+    --faint: #5f6a7a;
+    --red: #e5484d;
+    --red-soft: rgba(229, 72, 77, 0.14);
+    --amber: #f5a524;
+    --amber-soft: rgba(245, 165, 36, 0.14);
+    --orange: #f0764b;
+    --blue: #4c8dff;
+    --blue-soft: rgba(76, 141, 255, 0.14);
+    --teal: #35c4a5;
+    --purple: #9d7cd8;
+    --radius: 14px;
+    --font-body: 'Golos Text', 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-body);
+    background:
+      radial-gradient(1100px 500px at 85% -10%, rgba(229,72,77,0.07), transparent 60%),
+      radial-gradient(900px 420px at -10% 0%, rgba(76,141,255,0.05), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  .num, .kpi-value, td.v, .funnel-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums lining-nums; }
+  ::selection { background: rgba(229,72,77,0.3); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px 72px; }
+
+  /* ---------- header ---------- */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(14,18,23,0.86);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--divider);
+  }
+  .header-inner {
+    max-width: 1280px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo svg { flex: none; }
+  .logo-text { line-height: 1.25; }
+  .logo-text b { font-size: 16px; font-weight: 700; letter-spacing: 0.01em; }
+  .logo-text span { display: block; font-size: 12px; color: var(--muted); }
+  .header-meta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px;
+    background: var(--red-soft); color: #ff8b8f; border: 1px solid rgba(229,72,77,0.3);
+    white-space: nowrap;
+  }
+  .badge.neutral { background: var(--blue-soft); color: #8ab4ff; border-color: rgba(76,141,255,0.3); }
+
+  /* ---------- filters ---------- */
+  .filters {
+    position: sticky; top: 63px; z-index: 40;
+    background: rgba(14,18,23,0.86);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--divider);
+  }
+  .filters-inner { max-width: 1280px; margin: 0 auto; padding: 12px 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filters-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .chip {
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 6px 14px; border-radius: 999px;
+    color: var(--muted); background: var(--surface-2);
+    border: 1px solid var(--border);
+    cursor: pointer; white-space: nowrap;
+    transition: all 180ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .chip:hover { color: var(--text); border-color: #3a4557; }
+  .chip.active { color: #fff; background: var(--red); border-color: var(--red); font-weight: 600; }
+
+  /* ---------- sections ---------- */
+  .section-title {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin: 44px 0 18px;
+  }
+  .section-title h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  .section-title .sub { font-size: 13px; color: var(--muted); }
+  .section-title .estimate-flag {
+    font-size: 11px; font-weight: 600; color: var(--amber);
+    background: var(--amber-soft); border: 1px solid rgba(245,165,36,0.3);
+    padding: 2px 9px; border-radius: 999px; display: none;
+  }
+
+  /* ---------- KPI ---------- */
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .kpi {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 18px 16px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .kpi::before {
+    content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent, var(--red)), transparent 70%);
+    opacity: 0.85;
+  }
+  .kpi-label { font-size: 12.5px; color: var(--muted); font-weight: 500; line-height: 1.35; }
+  .kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .kpi-value small { font-size: 15px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+  .kpi-delta { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+  .kpi-delta.up { color: #ff8b8f; }
+  .kpi-delta.down { color: #6fdd8e; }
+  .kpi-delta.flat { color: var(--faint); }
+  .kpi-note { font-size: 11.5px; color: var(--faint); margin-top: auto; line-height: 1.4; }
+
+  /* ---------- cards & grids ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-7-5 { display: grid; grid-template-columns: 7fr 5fr; gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .card .card-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+  .chart-box { position: relative; height: 300px; }
+  .chart-box.tall { height: 340px; }
+  .chart-box.short { height: 260px; }
+
+  /* ---------- funnel ---------- */
+  .funnel { display: flex; flex-direction: column; gap: 13px; margin-top: 6px; }
+  .funnel-row { display: grid; grid-template-columns: 210px 1fr 120px; gap: 14px; align-items: center; }
+  .funnel-label { font-size: 13px; color: var(--text); line-height: 1.35; }
+  .funnel-label small { display: block; color: var(--faint); font-size: 11px; }
+  .funnel-track { background: var(--surface-3); border-radius: 6px; height: 26px; overflow: hidden; }
+  .funnel-bar { height: 100%; border-radius: 6px; width: 0; transition: width 900ms cubic-bezier(0.22,1,0.36,1); }
+  .funnel-value { font-size: 14px; font-weight: 600; text-align: right; white-space: nowrap; }
+  .funnel-value small { display: block; color: var(--faint); font-weight: 500; font-size: 11px; }
+
+  /* ---------- stat tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 14px; }
+  .tile {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tile .t-value { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--amber); letter-spacing: -0.01em; }
+  .tile .t-label { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .tile.red .t-value { color: #ff8b8f; }
+  .tile.blue .t-value { color: #8ab4ff; }
+  .tile.teal .t-value { color: #5ad4b8; }
+
+  /* ---------- table ---------- */
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+  table { width: 100%; min-width: 540px; border-collapse: collapse; }
+  thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface-2);
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  thead th:hover { color: var(--text); }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--divider); font-size: 13.5px; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  td.v { font-weight: 600; }
+  td .pos { color: #ff8b8f; }
+  .region-chip {
+    font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+    background: var(--blue-soft); color: #8ab4ff; border: 1px solid rgba(76,141,255,0.25);
+  }
+  .table-foot { padding: 12px 16px; font-size: 12px; color: var(--faint); }
+
+  /* ---------- cases ---------- */
+  .cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+  .case {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .case .c-tag {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    color: #ff8b8f; background: var(--red-soft); border-radius: 5px; padding: 3px 8px; align-self: flex-start;
+  }
+  .case .c-tag.amber { color: var(--amber); background: var(--amber-soft); }
+  .case .c-title { font-size: 14.5px; font-weight: 700; }
+  .case .c-text { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- map ---------- */
+  .map-card { position: relative; }
+  .map-scroll { overflow-x: auto; overscroll-behavior-x: contain; border-radius: 10px; }
+  #ruMap { width: 100%; min-width: 620px; height: auto; display: block; filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.45)); }
+  #ruMap path {
+    stroke-width: 2; cursor: pointer;
+    transition: opacity 350ms cubic-bezier(0.22,1,0.36,1), filter 160ms;
+  }
+  #ruMap path:hover { filter: brightness(1.4); }
+  #ruMap text {
+    fill: rgba(233,237,243,0.88); font-weight: 700; font-size: 26px;
+    letter-spacing: 0.04em; paint-order: stroke; stroke: rgba(14,18,23,0.72); stroke-width: 4px;
+    pointer-events: none; transition: opacity 350ms;
+  }
+  .map-legend {
+    display: flex; align-items: center; gap: 12px; margin-top: 14px;
+    font-size: 12px; color: var(--muted); flex-wrap: wrap;
+  }
+  .map-legend .bar { flex: 0 0 170px; height: 10px; border-radius: 999px; border: 1px solid var(--border); }
+  .map-legend .num { font-family: var(--font-mono); color: var(--text); font-weight: 600; }
+  .map-metrics { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .map-metrics .chip { font-size: 12px; padding: 4px 12px; }
+
+  .map-tooltip {
+    position: absolute; pointer-events: none; z-index: 20;
+    background: #202834; border: 1px solid #2a3341; border-radius: 10px;
+    padding: 10px 14px; font-size: 12.5px; color: #c8d0db; line-height: 1.55;
+    opacity: 0; transition: opacity 140ms; max-width: 250px; box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .map-tooltip b { color: #fff; font-size: 13px; }
+  .map-tooltip .tt-row { display: flex; justify-content: space-between; gap: 16px; }
+  .map-tooltip .tt-row .num { color: #e9edf3; font-weight: 600; }
+
+  /* ---------- causes ---------- */
+  .causes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .cause { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .cause .n { font-family: var(--font-mono); font-size: 12px; color: var(--red); font-weight: 700; }
+  .cause .t { font-size: 14px; font-weight: 600; margin: 6px 0 4px; }
+  .cause .d { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--divider); margin-top: 56px; padding-top: 28px; }
+  footer h4 { font-size: 14px; margin-bottom: 14px; }
+  .sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px 28px; list-style: none; }
+  .sources li { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .sources a { color: #8ab4ff; text-decoration: none; }
+  .sources a:hover { text-decoration: underline; }
+  .method {
+    margin-top: 24px; font-size: 12px; color: var(--faint); line-height: 1.6;
+    background: var(--surface); border: 1px solid var(--divider); border-radius: 10px; padding: 16px 18px;
+  }
+  .method b { color: var(--muted); }
+
+  .hint { font-size: 12px; color: var(--faint); margin-top: 10px; }
+  .est-note {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--amber);
+    background: var(--amber-soft); border: 1px solid rgba(245,165,36,0.3);
+    border-radius: 999px; padding: 2px 10px; margin-left: 8px; vertical-align: middle;
+  }
+
+  @media (max-width: 920px) {
+    .grid-2, .grid-7-5 { grid-template-columns: 1fr; }
+    .funnel-row { grid-template-columns: 130px 1fr 92px; gap: 10px; }
+    .funnel-label { font-size: 12px; }
+    .filters { position: static; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-value { font-size: 26px; }
+  }
+  @media (max-width: 560px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 14px 56px; }
+    .header-inner, .filters-inner { padding-left: 14px; padding-right: 14px; }
+    .chart-box { height: 250px; }
+    .funnel-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+    .funnel-label { flex: 1 1 auto; min-width: 0; }
+    .funnel-value { margin-left: auto; }
+    .funnel-value small { display: inline; margin-left: 6px; }
+    .funnel-track { flex: 1 0 100%; height: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="8" stroke="#e5484d" stroke-width="2"/>
+        <path d="M8 25V14" stroke="#e5484d" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M14 25V18" stroke="#f5a524" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M20 25V10" stroke="#e5484d" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M26 25V21" stroke="#4c8dff" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-text">
+        <b>Стройка под давлением</b>
+        <span>риски строительного рынка России · 2026</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge neutral">данные: октябрь 2026</span>
+      <span class="badge">кризисный тренд</span>
+    </div>
+  </div>
+</header>
+
+<nav class="filters" aria-label="Фильтр по федеральным округам">
+  <div class="filters-inner">
+    <span class="filters-label">Федеральный округ</span>
+    <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="section-title" style="margin-top:28px">
+    <h2>Масштаб кризиса</h2>
+    <span class="sub" id="kpi-scope">Россия, все федеральные округа</span>
+    <span class="est-note" id="kpi-estimate" style="display:none">оценка по округу</span>
+  </div>
+  <div class="kpi-grid" id="kpis"></div>
+
+  <div class="section-title">
+    <h2>Динамика банкротств и судебных исков</h2>
+    <span class="sub" id="dyn-scope">данные по РФ · «Контур.Фокус» и Судебный департамент ВС</span>
+    <span class="est-note" id="dyn-estimate" style="display:none">оценка: масштабирование по округу</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Новые дела о банкротстве в стройке</h3>
+      <div class="card-sub">инициированные дела, накопленным итогом с начала года · 2025 vs 2026</div>
+      <div class="chart-box"><canvas id="chartBankDyn"></canvas></div>
+      <div class="hint">За 9 месяцев 2026 года возбуждено 1 620 дел — на 38% больше, чем годом ранее (1 174). Ускорение пришлось на лето: с июня по сентябрь число дел выросло более чем на треть.</div>
+    </div>
+    <div class="card">
+      <h3>Иски к строительным компаниям в арбитраже</h3>
+      <div class="card-sub">янв–окт 2026, тыс. дел в месяц · обе категории (здания + спецработы)</div>
+      <div class="chart-box"><canvas id="chartClaims"></canvas></div>
+      <div class="hint">Январь–июнь — фактические данные (78,5 тыс. дел за полугодие, +15,6% г/г к строителям зданий). Июль–октябрь — экстраполяция темпа первого полугодия.</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h3>Иски дольщиков к застройщикам</h3>
+      <div class="card-sub">тыс. исков в год · после отмены моратория на неустойки с 01.01.2026</div>
+      <div class="chart-box"><canvas id="chartEquity"></canvas></div>
+      <div class="hint">В 2026 году прогнозируется 80–100 тыс. исков на общую сумму около 200 млрд ₽. Накопленный «долговой хвост» застройщиков перед дольщиками — свыше 100 млрд ₽.</div>
+    </div>
+    <div class="card">
+      <h3>Стадии банкротства застройщиков</h3>
+      <div class="card-sub">число юрлиц на 01.10.2026 · изменение за год</div>
+      <div class="chart-box"><canvas id="chartStages"></canvas></div>
+      <div class="hint">Всего в процедурах банкротства — 8 059 компаний (~3% рынка). Быстрее всего растет стадия наблюдения: +27% за год.</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Индикаторы финансовой устойчивости девелоперов</h2>
+    <span class="sub">СПАРК, Rusprofile · на 1 октября 2026</span>
+  </div>
+
+  <div class="card">
+    <h3>Структура сектора по уровню риска</h3>
+    <div class="card-sub">всего строительных компаний в России: <b class="num" id="funnel-total">362 300</b> · −4,3% за год</div>
+    <div class="funnel" id="funnel"></div>
+    <div class="hint">Группы риска по разным методикам СПАРК и могут частично пересекаться. Совокупно финансовые затруднения затрагивают от 30,4 до 47,4 тыс. компаний — 8,4–13,1% участников рынка.</div>
+  </div>
+
+  <div class="tiles" style="margin-top:16px">
+    <div class="tile red">
+      <div class="t-value">35%</div>
+      <div class="t-label">новостроек сдано с задержкой в 2025 году — против 17% годом ранее</div>
+    </div>
+    <div class="tile">
+      <div class="t-value">>100 млрд ₽</div>
+      <div class="t-label">накопленная задолженность застройщиков перед дольщиками по неустойкам</div>
+    </div>
+    <div class="tile red">
+      <div class="t-value">80–100 тыс.</div>
+      <div class="t-label">прогноз исков дольщиков на 2026 год — на сумму около 200 млрд ₽</div>
+    </div>
+    <div class="tile blue">
+      <div class="t-value">98%</div>
+      <div class="t-label">исков дольщиков удовлетворяется судами, но взыскивается лишь ~⅓ заявленной суммы</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>География: федеральные округа и регионы</h2>
+    <span class="sub">новые дела о банкротстве, 9 мес 2026 · разбивка по округам — оценка</span>
+  </div>
+
+  <div class="card map-card" style="margin-bottom:16px">
+    <h3>Карта: интенсивность риска по федеральным округам</h3>
+    <div class="card-sub">цвет — интенсивность выбранного показателя · клик по округу — фильтр по дашборду · повторный клик — сброс</div>
+    <div class="map-metrics" id="mapMetrics"></div>
+    <div class="map-scroll">
+      <svg id="ruMap" viewBox="0 0 1000 620" role="img" aria-label="Карта федеральных округов России"></svg>
+    </div>
+    <div class="map-tooltip" id="mapTooltip"></div>
+    <div class="map-legend" id="mapLegend"></div>
+    <div class="hint">Границы: Natural Earth, 10m. Крым и Севастополь включены в состав ЮФО. Разбивка показателей по округам — оценка.</div>
+  </div>
+
+  <div class="grid-7-5">
+    <div class="card">
+      <h3>Новые дела о банкротстве по округам</h3>
+      <div class="card-sub">нажмите на столбец, чтобы отфильтровать дашборд</div>
+      <div class="chart-box tall"><canvas id="chartDistricts"></canvas></div>
+    </div>
+    <div class="table-card">
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="region">Регион</th>
+            <th data-sort="district">Округ</th>
+            <th data-sort="new">Новых дел</th>
+            <th data-sort="total">В банкротстве</th>
+          </tr>
+        </thead>
+        <tbody id="regionRows"></tbody>
+      </table>
+      </div>
+      <div class="table-foot">Топ-регионы по данным «Контур.Фокуса» за 9 мес 2026. «В банкротстве» — компании в процедурах на 01.10.2026.</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Знаковые кейсы 2026 года</h2>
+    <span class="sub">как кризис выглядит на уровне отдельных компаний</span>
+  </div>
+  <div class="cases">
+    <div class="case">
+      <span class="c-tag">системно значимый</span>
+      <div class="c-title">«Самолёт»</div>
+      <div class="c-text">Долг №1 застройщика страны превысил годовые продажи. Компания просит у правительства 50 млрд ₽ поддержки, чтобы не сорвать обязательства перед дольщиками.</div>
+    </div>
+    <div class="case">
+      <span class="c-tag">банкротство</span>
+      <div class="c-title">«Спецтехнологии», Астрахань</div>
+      <div class="c-text">Признана банкротом с долгами 7,4 млрд ₽. В 2025–2026 годах к компании поданы иски на сотни миллионов рублей, включая требования ГВСУ на 111,5 млн ₽.</div>
+    </div>
+    <div class="case">
+      <span class="c-tag amber">рост исковой нагрузки</span>
+      <div class="c-title">«Крокус Интернэшнл»</div>
+      <div class="c-text">За 2026 год контрагенты подали уже 190 исков на 3,7 млрд ₽ — сумма превышает весь 2025 год (263 иска на 2 млрд ₽). Крупнейший иск — от Фонда развития территорий на 2,3 млрд ₽.</div>
+    </div>
+    <div class="case">
+      <span class="c-tag amber">судебные споры</span>
+      <div class="c-title">ГК «Гранель»</div>
+      <div class="c-text">Иск структуры «МСК-строй» к банку БСПБ на 11,7 млрд ₽ отклонен судом Петербурга. Долг «Самолёта» — не единственный кейс многомиллиардных споров девелоперов с кредиторами.</div>
+    </div>
+    <div class="case">
+      <span class="c-tag">региональные банкротства</span>
+      <div class="c-title">Регионы</div>
+      <div class="c-text">Банкротами признаны: «СК Ак Барс» (Казань), СЗ «Высота» (Челябинск), «Салаир» (Сургут), «Звезда-2013» (Пермь), КДСК (Красноярск), «Авангардстрой» (Новосибирск).</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Почему это происходит</h2>
+    <span class="sub">ключевые факторы давления на отрасль</span>
+  </div>
+  <div class="causes">
+    <div class="cause">
+      <div class="n">01</div>
+      <div class="t">Отмена моратория на неустойки</div>
+      <div class="d">С 1 января 2026 года застройщики снова отвечают деньгами за срыв сроков передачи жилья — суды получили волну исков дольщиков.</div>
+    </div>
+    <div class="cause">
+      <div class="n">02</div>
+      <div class="t">Дорогие деньги и неплатежи</div>
+      <div class="d">Юристы связывают рост корпоративных споров с нарушением договорных обязательств и проблемами ликвидности: неплатежи каскадом идут по цепочке подрядчиков.</div>
+    </div>
+    <div class="cause">
+      <div class="n">03</div>
+      <div class="t">Сжатие сектора</div>
+      <div class="d">За год рынок потерял 16,4 тыс. компаний (−4,3%). Ликвидации (31,1 тыс. за 9 мес) опережают новые регистрации.</div>
+    </div>
+    <div class="cause">
+      <div class="n">04</div>
+      <div class="t">Региональный характер кризиса</div>
+      <div class="d">Банкротятся в основном региональные девелоперы, а не федеральные лидеры: уязвимы компании без доступа к длинным деньгам.</div>
+    </div>
+  </div>
+
+  <footer>
+    <h4>Источники</h4>
+    <ul class="sources">
+      <li><a href="https://kontur.ru/press/news/88812-bankrotstva_zastrojshhikov">Контур.Фокус — банкротства застройщиков, октябрь 2026</a></li>
+      <li><a href="https://ru.themoscowtimes.com/2026/10/19/vrossii-snachala-goda-likvidirovali-bolee-30-tisyach-stroitelnih-kompanii-iz-za-finansovih-problem-a208938">The Moscow Times — ликвидация 31,1 тыс. строительных компаний</a></li>
+      <li><a href="https://www.kommersant.ru/doc/9064017">Коммерсантъ — каждый десятый застройщик в зоне финансовых трудностей (СПАРК)</a></li>
+      <li><a href="https://www.dp.ru/a/2026/10/19/v-rossii-sokratilos-chislo">dp.ru — сокращение числа строительных компаний (СПАРК, Rusprofile)</a></li>
+      <li><a href="https://mperspektiva.ru/topics/chislo-iskov-k-stroitelnym-kompaniyam-vyroslo-na-16-za-god/">Московская перспектива — рост исков к строительным компаниям на 16%</a></li>
+      <li><a href="https://probankrotstvo.ru/news/biznes-vernulsia-v-arbitrazhnye-sudy-posle-rosta-poslin-10916">PROбанкротство — рост арбитражных дел в 2026 году</a></li>
+      <li><a href="https://nsp.ru/43331-dolshhiki-mogut-vzyskat-s-zastroishhikov-67-mlrd-rublei-strafov-za-prosrocku">НСП — дольщики могут взыскать 67 млрд ₽ штрафов за просрочку</a></li>
+      <li><a href="https://www.kommersant.ru/doc/9007993">Коммерсантъ — «Стройки теряют опору» (ЮФО и СКФО)</a></li>
+      <li><a href="https://erzrf.ru/news/article/v-stroitelnoy-otrasli-rastet-chislo-likvidatsiy-i-bankrotstv">ЕРЗ.РФ — ликвидации и банкротства в стройотрасли</a></li>
+      <li><a href="https://ancb.ru/news/read/22492">АНЦБ — закрылось на 16,4 тыс. компаний больше, чем открылось</a></li>
+      <li><a href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/">Natural Earth — границы регионов России (10m admin-1)</a></li>
+    </ul>
+    <div class="method">
+      <b>Методика.</b> Суммарные показатели по России — опубликованные данные СПАРК, Rusprofile и «Контур.Фокуса» (октябрь 2026). Карта — коническая равновеликая проекция по границам Natural Earth (10m, admin-1); регионы объединены в контуры федеральных округов. Разбивка по федеральным округам — оценка: восстановлена по региональным данным источников (Москва, Санкт-Петербург, Московская область, Татарстан, Краснодарский и Ростовский края и др.) с распределением остатка пропорционально числу компаний в округе; итоги по округам в сумме соответствуют общероссийским значениям. Помесячная динамика исков за январь–июнь — фактические данные арбитражных судов, июль–октябрь — экстраполяция темпа первого полугодия. Дашборд носит аналитический характер и не является индивидуальной инвестиционной рекомендацией.
+    </div>
+  </footer>
+</div>
+
+<script>
+/* =============== ДАННЫЕ =============== */
+const DISTRICTS = [
+  { id:'ru',   name:'Россия',            full:'Россия, все федеральные округа', companies:362300, liquidated:31100, bankruptLiquidation:30400, suspended:41700, highRisk:47100, new2026:1620, new2025:1174, bankruptTotal:8059, isRF:true },
+  { id:'cfo',  name:'ЦФО',                full:'Центральный федеральный округ',  companies:108000, liquidated:9300,  bankruptLiquidation:9060,  suspended:12430, highRisk:14070, new2026:655,  new2025:475,  bankruptTotal:3210 },
+  { id:'szfo', name:'СЗФО',               full:'Северо-Западный федеральный округ', companies:39800, liquidated:3420, bankruptLiquidation:3340, suspended:4590, highRisk:5180, new2026:158, new2025:115, bankruptTotal:970 },
+  { id:'yufo', name:'ЮФО',                full:'Южный федеральный округ',        companies:33000,  liquidated:2830, bankruptLiquidation:2760, suspended:3790, highRisk:4290, new2026:172, new2025:115, bankruptTotal:690 },
+  { id:'skfo', name:'СКФО',               full:'Северо-Кавказский федеральный округ', companies:15500, liquidated:1340, bankruptLiquidation:1310, suspended:1790, highRisk:2030, new2026:67, new2025:45, bankruptTotal:339 },
+  { id:'pfo',  name:'ПФО',                full:'Приволжский федеральный округ',  companies:65000,  liquidated:5570, bankruptLiquidation:5440, suspended:7460, highRisk:8430, new2026:258, new2025:187, bankruptTotal:1350 },
+  { id:'ufo',  name:'УФО',                full:'Уральский федеральный округ',    companies:40100,  liquidated:3420, bankruptLiquidation:3340, suspended:4590, highRisk:5180, new2026:125, new2025:90,  bankruptTotal:570 },
+  { id:'sfo',  name:'СФО',                full:'Сибирский федеральный округ',    companies:47000,  liquidated:4010, bankruptLiquidation:3920, suspended:5380, highRisk:6080, new2026:138, new2025:100, bankruptTotal:670 },
+  { id:'dfo',  name:'ДФО',                full:'Дальневосточный федеральный округ', companies:13900, liquidated:1210, bankruptLiquidation:1230, suspended:1670, highRisk:1840, new2026:47, new2025:47, bankruptTotal:260 },
+];
+
+const REGIONS = [
+  { region:'Москва',              district:'cfo',  newCases:455, inBankruptcy:2081 },
+  { region:'Московская область',  district:'cfo',  newCases:104, inBankruptcy:667 },
+  { region:'Санкт-Петербург',     district:'szfo', newCases:127, inBankruptcy:625 },
+  { region:'Татарстан',           district:'pfo',  newCases:79,  inBankruptcy:258 },
+  { region:'Краснодарский край',  district:'yufo', newCases:52,  inBankruptcy:367 },
+  { region:'Ростовская область',  district:'yufo', newCases:34,  inBankruptcy:158 },
+  { region:'Крым',                district:'yufo', newCases:null, inBankruptcy:136 },
+];
+
+const MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт'];
+const CLAIMS_2026 = [12.2, 11.8, 14.1, 13.2, 13.6, 13.6, 13.5, 13.3, 13.6, 13.8];
+const CLAIMS_2025 = [10.6, 10.2, 12.7, 11.9, 11.8, 10.8, 11.5, 11.3, 11.6, 11.9];
+
+/* =============== УТИЛИТЫ =============== */
+const fmt = n => Math.round(n).toLocaleString('ru-RU');
+const $ = s => document.querySelector(s);
+
+Chart.defaults.color = '#98a3b3';
+Chart.defaults.font.family = "'Golos Text', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+/* =============== KPI =============== */
+const KPI_DEFS = [
+  { key:'companies', label:'Компаний в секторе', note:'на 01.10.2026', accent:'#4c8dff',
+    delta:d => ({cls:'down', text:'−4,3% за год'}) },
+  { key:'liquidated', label:'Ликвидировано юрлиц', note:'январь–сентябрь 2026', accent:'#e5484d' },
+  { key:'bankruptLiquidation', label:'В банкротстве и ликвидации', note:'на начало августа 2026', accent:'#f0764b' },
+  { key:'suspended', label:'Счета приостановлены ФНС', note:'на начало августа 2026', accent:'#f5a524' },
+  { key:'highRisk', label:'Высокий риск неплатежеспособности', note:'индекс фин. риска · 13% рынка', accent:'#e5484d' },
+  { key:'new2026', label:'Новых дел о банкротстве', note:'за 9 месяцев 2026', accent:'#e5484d',
+    delta:d => ({cls:'up', text:'▲ +38% г/г'}) },
+];
+
+let state = { district:'ru', sortKey:'new', sortDir:-1, mapMetric:'highRisk' };
+
+function currentDistrict() { return DISTRICTS.find(d => d.id === state.district); }
+
+function renderKPIs() {
+  const d = currentDistrict();
+  const el = $('#kpis');
+  el.innerHTML = '';
+  KPI_DEFS.forEach(def => {
+    const value = d[def.key];
+    const card = document.createElement('div');
+    card.className = 'kpi';
+    card.style.setProperty('--accent', def.accent);
+    const delta = def.delta ? def.delta(d) : null;
+    card.innerHTML = `
+      <div class="kpi-label">${def.label}</div>
+      <div class="kpi-value num" data-target="${value}">0</div>
+      ${delta ? `<div class="kpi-delta ${delta.cls}">${delta.text}</div>` : '<div class="kpi-delta flat">—</div>'}
+      <div class="kpi-note">${def.note}</div>`;
+    el.appendChild(card);
+    animateValue(card.querySelector('.kpi-value'), value);
+  });
+  $('#kpi-scope').textContent = d.isRF ? 'Россия, все федеральные округа' : d.full;
+  $('#kpi-estimate').style.display = d.isRF ? 'none' : 'inline-block';
+}
+
+function animateValue(node, target) {
+  const start = performance.now(), dur = 800;
+  const step = t => {
+    const p = Math.min((t - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    node.textContent = fmt(target * eased);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* =============== Воронка устойчивости =============== */
+const FUNNEL_DEFS = [
+  { key:'highRisk',            label:'Высокий риск неплатежеспособности', sub:'индекс финансового риска', color:'#e5484d', pctLabel:'13,0% рынка' },
+  { key:'suspended',            label:'Операции по счетам приостановлены', sub:'решение ФНС', color:'#f5a524', pctLabel:'11,5% рынка' },
+  { key:'bankruptLiquidation', label:'В процедурах банкротства и ликвидации', sub:'СПАРК, нач. августа', color:'#f0764b', pctLabel:'8,4% рынка' },
+  { key:'bankruptTotal',       label:'В процедурах банкротства', sub:'«Контур.Фокус», 01.10.2026', color:'#c73a3f', pctLabel:'2,2% рынка' },
+];
+
+function renderFunnel() {
+  const d = currentDistrict();
+  const el = $('#funnel');
+  el.innerHTML = '';
+  $('#funnel-total').textContent = fmt(d.companies);
+  FUNNEL_DEFS.forEach(def => {
+    const v = d[def.key];
+    const w = Math.max(4, (v / d.companies) * 100);
+    const row = document.createElement('div');
+    row.className = 'funnel-row';
+    row.innerHTML = `
+      <div class="funnel-label">${def.label}<small>${def.sub}</small></div>
+      <div class="funnel-track"><div class="funnel-bar" style="background:${def.color}"></div></div>
+      <div class="funnel-value">${fmt(v)}<small>${def.pctLabel}</small></div>`;
+    el.appendChild(row);
+    requestAnimationFrame(() => { row.querySelector('.funnel-bar').style.width = w + '%'; });
+  });
+}
+
+/* =============== ЧАРТЫ =============== */
+let charts = {};
+
+function makeCharts() {
+  const grid = { color:'rgba(255,255,255,0.05)' };
+  const tooltip = {
+    backgroundColor:'#202834', borderColor:'#2a3341', borderWidth:1,
+    titleColor:'#e9edf3', bodyColor:'#c8d0db', padding:10, cornerRadius:8,
+    titleFont:{family:"'Golos Text'", weight:'600'}, bodyFont:{family:"'JetBrains Mono'"},
+  };
+
+  charts.bankDyn = new Chart($('#chartBankDyn'), {
+    type:'bar',
+    data:{ labels:['6 месяцев','8 месяцев','9 месяцев'],
+      datasets:[
+        { label:'2025', data:[794, 1032, 1174], backgroundColor:'#3d4a5c', borderRadius:6, barPercentage:0.8 },
+        { label:'2026', data:[1089, 1454, 1620], backgroundColor:'#e5484d', borderRadius:6, barPercentage:0.8 },
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{usePointStyle:true, pointStyle:'circle', padding:18}}, tooltip },
+      scales:{ y:{ grid, beginAtZero:true, ticks:{callback:v=>fmt(v)} }, x:{grid:{display:false}} } }
+  });
+
+  charts.claims = new Chart($('#chartClaims'), {
+    type:'line',
+    data:{ labels:MONTHS,
+      datasets:[
+        { label:'2025', data:CLAIMS_2025, borderColor:'#5f6a7a', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:3, pointBackgroundColor:'#5f6a7a', tension:0.35 },
+        { label:'2026', data:CLAIMS_2026, borderColor:'#e5484d', backgroundColor:'rgba(229,72,77,0.08)',
+          borderWidth:2.5, pointRadius:3.5, pointBackgroundColor:'#e5484d', tension:0.35, fill:true,
+          segment:{ borderDash:c => c.p1DataIndex >= 6 ? [6,5] : undefined } },
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{usePointStyle:true, pointStyle:'line', padding:18}},
+        tooltip:{...tooltip, callbacks:{ label:c=>` ${c.dataset.label}: ${c.parsed.y.toLocaleString('ru-RU')} тыс. дел` }} },
+      scales:{ y:{ grid, beginAtZero:true, suggestedMax:16, ticks:{callback:v=>v+' тыс'} }, x:{grid:{display:false}} } }
+  });
+
+  charts.equity = new Chart($('#chartEquity'), {
+    type:'bar',
+    data:{ labels:['2023','2024','2025','2026 прогноз'],
+      datasets:[{ label:'исков дольщиков, тыс.', data:[211.4, 78.2, 35, 90],
+        backgroundColor:['#3d4a5c','#5f6a7a','#8a6d3b','#e5484d'], borderRadius:6, barPercentage:0.62 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{...tooltip, callbacks:{ label:c=>` ${c.parsed.y.toLocaleString('ru-RU')} тыс. исков` }} },
+      scales:{ y:{ grid, beginAtZero:true, ticks:{callback:v=>v+' тыс'} }, x:{grid:{display:false}} } }
+  });
+
+  charts.stages = new Chart($('#chartStages'), {
+    type:'bar',
+    data:{ labels:['Конкурсное производство','Наблюдение','Производство возбуждено','Внешнее управление','Фин. оздоровление'],
+      datasets:[{ label:'юрлиц, 01.10.2026',
+        data:[6394, 916, 741, 6, 2],
+        backgroundColor:['#8a3035','#e5484d','#f0764b','#5f6a7a','#5f6a7a'], borderRadius:6, barPercentage:0.7 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{...tooltip, callbacks:{ afterLabel:c=>{
+          const d = {0:'+0,6% за год',1:'+27,2% за год',2:'−11,6% за год',3:'−40% за год',4:'без изменений'}[c.dataIndex];
+          return ' ' + d; } }} },
+      scales:{ x:{ grid, beginAtZero:true, ticks:{callback:v=>fmt(v)} }, y:{grid:{display:false}} } }
+  });
+
+  charts.districts = new Chart($('#chartDistricts'), {
+    type:'bar',
+    data:{ labels:DISTRICTS.filter(d=>!d.isRF).map(d=>d.name),
+      datasets:[{ label:'новых дел, 9 мес 2026',
+        data:DISTRICTS.filter(d=>!d.isRF).map(d=>d.new2026),
+        backgroundColor:DISTRICTS.filter(d=>!d.isRF).map(d=>d.id===state.district?'#e5484d':'#4a5568'),
+        borderRadius:6, barPercentage:0.72 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      onClick:(e, els)=>{ if(els.length){ setDistrict(DISTRICTS.filter(d=>!d.isRF)[els[0].index].id); } },
+      plugins:{ legend:{display:false},
+        tooltip:{...tooltip, callbacks:{ label:c=>` ${fmt(c.parsed.y)} дел (оценка)` }} },
+      scales:{ y:{ grid, beginAtZero:true, ticks:{callback:v=>fmt(v)} }, x:{grid:{display:false}} } }
+  });
+}
+
+/* масштабирование чартов под выбранный округ */
+function scaleCharts() {
+  const d = currentDistrict();
+  const isRF = d.isRF;
+  const s = isRF ? 1 : d.new2026 / 1620;          // банкротная динамика
+  const sClaims = isRF ? 1 : d.companies / 362300; // иски
+  charts.bankDyn.data.datasets[0].data = [794*s, 1032*s, 1174*s].map(v=>+v.toFixed(1));
+  charts.bankDyn.data.datasets[1].data = [1089*s, 1454*s, 1620*s].map(v=>+v.toFixed(1));
+  charts.bankDyn.update();
+  charts.claims.data.datasets[0].data = CLAIMS_2025.map(v=>+(v*sClaims).toFixed(1));
+  charts.claims.data.datasets[1].data = CLAIMS_2026.map(v=>+(v*sClaims).toFixed(1));
+  charts.claims.update();
+  charts.districts.data.datasets[0].backgroundColor =
+    DISTRICTS.filter(x=>!x.isRF).map(x=>x.id===state.district?'#e5484d':'#4a5568');
+  charts.districts.update();
+  $('#dyn-estimate').style.display = isRF ? 'none' : 'inline-block';
+  $('#dyn-scope').textContent = isRF
+    ? 'данные по РФ · «Контур.Фокус» и арбитражные суды'
+    : d.full + ' · оценка по доле округа';
+}
+
+/* =============== Таблица регионов =============== */
+function renderTable() {
+  const rows = REGIONS.filter(r => state.district === 'ru' || r.district === state.district);
+  const k = state.sortKey, dir = state.sortDir;
+  rows.sort((a,b) => {
+    const va = a[k] === null ? -1 : a[k], vb = b[k] === null ? -1 : b[k];
+    return (va - vb) * dir;
+  });
+  const dm = Object.fromEntries(DISTRICTS.map(d=>[d.id, d.name]));
+  if (!rows.length) {
+    $('#regionRows').innerHTML = `<tr><td colspan="4" style="color:var(--faint);font-size:12.5px;white-space:normal">
+      Для этого округа нет регионов в топ-выборке «Контур.Фокуса» — данные смотрите в источниках внизу страницы.
+    </td></tr>`;
+    return;
+  }
+  $('#regionRows').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.region}</td>
+      <td><span class="region-chip">${dm[r.district]}</span></td>
+      <td class="v num">${r.newCases === null ? '—' : fmt(r.newCases)}</td>
+      <td class="v num"><span class="pos">${fmt(r.inBankruptcy)}</span></td>
+    </tr>`).join('');
+}
+
+document.querySelectorAll('thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (state.sortKey === k) state.sortDir *= -1; else { state.sortKey = k; state.sortDir = -1; }
+    renderTable();
+  });
+});
+
+/* =============== Фильтры =============== */
+function setDistrict(id) {
+  state.district = id;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+  renderKPIs(); renderFunnel(); scaleCharts(); renderTable(); updateMap();
+}
+
+/* =============== Карта =============== */
+const MAP_METRICS = [
+  { id: 'highRisk', label: 'Высокий риск', unit: 'компаний' },
+  { id: 'new2026', label: 'Новые дела', unit: 'дел' },
+  { id: 'liquidated', label: 'Ликвидации', unit: 'юрлиц' },
+  { id: 'bankruptTotal', label: 'В банкротстве', unit: 'компаний' },
+];
+const NS = 'http://www.w3.org/2000/svg';
+
+function renderMapMetrics() {
+  const el = $('#mapMetrics');
+  el.innerHTML = '';
+  MAP_METRICS.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (state.mapMetric === m.id ? ' active' : '');
+    b.textContent = m.label;
+    b.addEventListener('click', () => {
+      state.mapMetric = m.id;
+      renderMapMetrics(); updateMap(); renderLegend();
+    });
+    el.appendChild(b);
+  });
+}
+
+function renderLegend() {
+  const m = MAP_METRICS.find(x => x.id === state.mapMetric);
+  const vals = DISTRICTS.filter(d => !d.isRF).map(d => d[m.id]);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  $('#mapLegend').innerHTML = `
+    <span>${m.label}, ${m.unit}</span>
+    <span class="bar" style="background:linear-gradient(90deg,#2a1c26,#8a2f38 50%,#e5484d)"></span>
+    <span class="num">${fmt(min)}</span>
+    <span>—</span>
+    <span class="num">${fmt(max)}</span>`;
+}
+
+function metricColor(districtId) {
+  const m = MAP_METRICS.find(x => x.id === state.mapMetric);
+  const ds = DISTRICTS.filter(d => !d.isRF);
+  const vals = ds.map(d => d[m.id]);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const v = DISTRICTS.find(d => d.id === districtId)[m.id];
+  // корневая шкала — чтобы крупный ЦФО не «съедал» контраст остальных
+  const t = (Math.sqrt(v) - Math.sqrt(min)) / (Math.sqrt(max) - Math.sqrt(min));
+  const stops = [[42,28,38], [138,47,56], [229,72,77]];
+  const mix = (a, b, k) => a.map((x, i) => Math.round(x + (b[i] - x) * k));
+  const c = t < 0.5 ? mix(stops[0], stops[1], t * 2) : mix(stops[1], stops[2], (t - 0.5) * 2);
+  return `rgb(${c.join(',')})`;
+}
+
+function buildMap() {
+  const svg = $('#ruMap');
+  MAP_DATA.districts.forEach(r => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', r.p);
+    p.dataset.d = r.d;
+    p.setAttribute('role', 'button');
+    const dd = DISTRICTS.find(x => x.id === r.d);
+    p.setAttribute('aria-label', dd.full);
+    svg.appendChild(p);
+  });
+  for (const [d, xy] of Object.entries(MAP_DATA.labels)) {
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', xy[0]); t.setAttribute('y', xy[1]);
+    t.dataset.label = d;
+    t.textContent = DISTRICTS.find(x => x.id === d).name;
+    svg.appendChild(t);
+  }
+  svg.querySelectorAll('path').forEach(p => {
+    p.addEventListener('click', () => setDistrict(p.dataset.d === state.district ? 'ru' : p.dataset.d));
+    p.addEventListener('mousemove', e => showMapTooltip(e, p.dataset.d));
+    p.addEventListener('mouseleave', hideMapTooltip);
+  });
+  updateMap();
+}
+
+function updateMap() {
+  const sel = state.district;
+  $('#ruMap').querySelectorAll('path').forEach(p => {
+    const d = p.dataset.d;
+    const isSel = sel === 'ru' || d === sel;
+    p.style.opacity = isSel ? 1 : 0.25;
+    p.style.fill = metricColor(d);
+    p.style.stroke = p.style.fill; // обводка в цвет заливки — границы регионов внутри округа не видны
+    p.style.strokeWidth = 1;
+  });
+  $('#ruMap').querySelectorAll('text').forEach(t => {
+    t.style.opacity = (sel === 'ru' || t.dataset.label === sel) ? 1 : 0.2;
+  });
+}
+
+function showMapTooltip(e, districtId) {
+  const d = DISTRICTS.find(x => x.id === districtId);
+  const m = MAP_METRICS.find(x => x.id === state.mapMetric);
+  const tt = $('#mapTooltip');
+  tt.innerHTML = `
+    <b>${d.full}</b>
+    <div class="tt-row"><span>${m.label}</span><span class="num">${fmt(d[m.id])} ${m.unit}</span></div>
+    <div class="tt-row"><span>Новых дел (9 мес)</span><span class="num">${fmt(d.new2026)}</span></div>
+    <div class="tt-row"><span>В банкротстве</span><span class="num">${fmt(d.bankruptTotal)}</span></div>
+    <div class="tt-row"><span>Компаний</span><span class="num">${fmt(d.companies)}</span></div>
+    <div class="tt-row"><span>Ликвидировано</span><span class="num">${fmt(d.liquidated)}</span></div>`;
+  const card = tt.parentElement.getBoundingClientRect();
+  const x = Math.min(e.clientX - card.left + 16, card.width - 230);
+  const y = e.clientY - card.top + 16;
+  tt.style.left = x + 'px'; tt.style.top = y + 'px';
+  tt.style.opacity = 1;
+}
+
+function hideMapTooltip() { $('#mapTooltip').style.opacity = 0; }
+
+function renderChips() {
+  const el = $('#chips');
+  DISTRICTS.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (d.isRF ? ' active' : '');
+    b.dataset.id = d.id;
+    b.textContent = d.isRF ? 'Россия' : d.name;
+    b.title = d.full;
+    b.addEventListener('click', () => setDistrict(d.id));
+    el.appendChild(b);
+  });
+}
+
+/* =============== init =============== */
+renderChips();
+renderKPIs();
+renderFunnel();
+makeCharts();
+renderTable();
+renderMapMetrics();
+buildMap();
+renderLegend();
+</script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  const DEFAULT_LINE_HEIGHT = 16;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  const PICK_CAPABILITIES = ["pick"];
+  const PICK_CHAIN_LENGTH = 4;
+  const PICK_MAX_TEXT_CHARS = 120;
+  const PICK_MAX_HTML_CHARS = 300;
+
+  function truncate(value, maxChars) {
+    return value.length > maxChars ? value.slice(0, maxChars - 1) + "…" : value;
+  }
+
+  function isPickableElement(element) {
+    return (
+      element instanceof Element &&
+      element !== document.documentElement &&
+      element !== document.body
+    );
+  }
+
+  function resolvePickTarget(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const element = document.elementFromPoint(x, y);
+    return isPickableElement(element) ? element.closest("svg") || element : null;
+  }
+
+  function pickLabel(element) {
+    if (element.id) return element.localName + "#" + element.id;
+    return [element.localName].concat(Array.from(element.classList).slice(0, 2)).join(".");
+  }
+
+  // Only attributes that help find the element in source. data-* values and URL
+  // query strings or fragments can carry tokens.
+  const PICK_ATTRIBUTES = new Set([
+    "id",
+    "class",
+    "name",
+    "type",
+    "role",
+    "alt",
+    "aria-label",
+    "href",
+    "src",
+  ]);
+
+  function pickAttributeValue(attribute) {
+    return attribute.name === "href" || attribute.name === "src"
+      ? attribute.value.split(/[?#]/)[0]
+      : attribute.value;
+  }
+
+  function describePickElement(element) {
+    const chain = [];
+    for (
+      let current = element;
+      isPickableElement(current) && chain.length < PICK_CHAIN_LENGTH;
+      current = current.parentElement
+    ) {
+      chain.unshift(current);
+    }
+    const attributes = Array.from(element.attributes)
+      .filter((attribute) => PICK_ATTRIBUTES.has(attribute.name))
+      .map((attribute) => ` ${attribute.name}="${pickAttributeValue(attribute).replace(/"/g, "&quot;")}"`)
+      .join("");
+    const text = (element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      chain: chain.map(pickLabel),
+      html: truncate(`<${element.localName}${attributes}>`, PICK_MAX_HTML_CHARS),
+      text: text ? truncate(text, PICK_MAX_TEXT_CHARS) : undefined,
+    };
+  }
+
+  // Hover asks once per frame, and innerText on a large section forces layout,
+  // so only the rect is re-read while the pointer stays on the same element.
+  // Clicks ask for fresh details since the page may have changed the element.
+  let lastPick = null;
+
+  function describePickTarget(element, fresh) {
+    if (fresh || lastPick?.element !== element) {
+      lastPick = { element, details: describePickElement(element) };
+    }
+    const rect = element.getBoundingClientRect();
+    return {
+      rect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+      ...lastPick.details,
+    };
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      capabilities: PICK_CAPABILITIES,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_PICK") {
+      const element = resolvePickTarget(event.data.x, event.data.y);
+      postToTrustedTop({
+        type: "INLINE_EDIT_PICK_RESULT",
+        seq: event.data.seq,
+        target: element ? describePickTarget(element, event.data.fresh === true) : null,
+      });
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_BY") {
+      const { deltaX, deltaY, deltaMode } = event.data;
+      if (!scrollForwarding || !Number.isFinite(deltaX) || !Number.isFinite(deltaY)) return;
+      if (deltaMode !== 0 && deltaMode !== 1 && deltaMode !== 2) return;
+      const lineHeight =
+        parseFloat(getComputedStyle(document.documentElement).lineHeight) || DEFAULT_LINE_HEIGHT;
+      const scaleX = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerWidth : 1;
+      const scaleY = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerHeight : 1;
+      // The selection overlay receives the wheel event instead of this iframe.
+      // Instant scrolling preserves trackpad deltas even on smooth-scroll sites.
+      window.scrollBy({ left: deltaX * scaleX, top: deltaY * scaleY, behavior: "instant" });
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
